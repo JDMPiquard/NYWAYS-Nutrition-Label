@@ -31,7 +31,8 @@ function(input, output, session){
 	)
 
 	output$UPCResult <- DT::renderDataTable({
-		return(
+		if(resultsTable.df() != ""){
+			return(
 			datatable(
 				resultsTable.df(),
 				options = list(pageLength = 30,
@@ -39,6 +40,7 @@ function(input, output, session){
 				rownames=T, 
 				escape=F)
 		)
+		}
 	})
 
 

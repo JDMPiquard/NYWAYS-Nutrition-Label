@@ -1,5 +1,9 @@
-# specifics
+# specifics to project
 secure/
+
+# relating to R
+*.Rhistory
+rsconnect/
 
 # Compiled source #
 ###################

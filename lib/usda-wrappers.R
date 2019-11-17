@@ -9,6 +9,13 @@ usda.endpoint <- "https://api.nal.usda.gov/fdc/v1/"
 # note that an API Key needs to be supplied with each call
 
 # Wrappers ####
+check200 <- function(httpResponse){
+  if(httpResponse$status_code == 200){
+    return(T)
+  } else {
+    return(F)
+  }
+}
 
 # FOOD SEARCH - working
 usda.search <- function(searchString, # note that more fields are available as per https://fdc.nal.usda.gov/api-guide.html
@@ -37,7 +44,11 @@ usda.search <- function(searchString, # note that more fields are available as p
     encode = "json"
   )
   
-  tempContent <- content(postResponse)
+  if(check200(postResponse)){
+    tempContent <- content(postResponse)
+  } else {
+    tempContent <- NULL
+  }
   
   return(tempContent)
 }
@@ -52,7 +63,11 @@ usda.details <- function(fdcId,
   
   getResponse <- GET(usda.details.endpoint)
   
-  tempContent <- content(getResponse)
+  if(check200(getResponse)){
+    tempContent <- content(getResponse)
+  } else {
+    tempContent <- NULL
+  }
   
   return(tempContent)
 }
@@ -79,7 +94,26 @@ simple_list_to_df <- function(simpleList){
   return(result.df)
 }
 
+convertNULLtoBlank <- function(valueToCheck){
+  return(ifelse(is.null(valueToCheck),"",valueToCheck))
+}
+
 # Parsers ####
+
+# Helper: only extract the useful and consistent data
+usda.search.parsed.standardise <- function(searchListItem){
+  tempResult.list <- list(
+    fdcId = searchListItem$fdcId,
+    description = searchListItem$description,
+    dataType = searchListItem$dataType,
+    brandOwner = searchListItem$brandOwner,
+    gtinUpc = searchListItem$gtinUpc
+  )
+  
+  tempResult.list <- lapply(tempResult.list, convertNULLtoBlank)
+  
+  return(tempResult.list)
+}
 
 # SEARCH
 usda.search.parsed <- function(searchString, # note that more fields are available as per https://fdc.nal.usda.gov/api-guide.html
@@ -94,10 +128,27 @@ usda.search.parsed <- function(searchString, # note that more fields are availab
                                    Foundation,
                                    Survey)
   
-  results.df <- simple_list_to_df(temp.results.list$foods)
+  temp.results.list.clean <- lapply(temp.results.list$foods, usda.search.parsed.standardise)
+  
+  results.df <- simple_list_to_df(temp.results.list.clean)
   
   return(results.df)
   
+}
+
+# DETAILS Helper - only extract consistent data
+usda.details.parsed.standardise <- function(detailsListItem){
+  tempResult.list <- list(
+    id = detailsListItem$nutrient$id,
+    number = detailsListItem$nutrient$number,
+    name = detailsListItem$nutrient$name,
+    unitName = detailsListItem$nutrient$unitName,
+    amount = detailsListItem$amount
+  )
+  
+  tempResult.list <- lapply(tempResult.list, convertNULLtoBlank)
+  
+  return(tempResult.list)
 }
 
 # DETAILS
@@ -106,11 +157,15 @@ usda.details.parsed <- function(fdcId,
   
   temp.results.list <- usda.details(fdcId, api_key)
   
-  tempNutrients.df <- simple_list_to_df(temp.results.list$foodNutrients)
+  if(is.null(temp.results.list)){
+    return(NULL)
+  }
+  
+  tempNutrients.list <- lapply(temp.results.list$foodNutrients, usda.details.parsed.standardise)
+  
+  tempNutrients.df <- simple_list_to_df(tempNutrients.list)
   
   servingSize <- temp.results.list$servingSize
-  
-  tempNutrients.df <- tempNutrients.df[,c("nutrient.id","nutrient.name", "amount", "nutrient.unitName")]
   
   tempNutrients.df$nutrient.perServing <- tempNutrients.df$amount*servingSize/100
   
@@ -130,7 +185,7 @@ usda.details.parsed <- function(fdcId,
 # GET SPECIFIC NUTRIENT
 usda.details.getNutrientByID <- function(foodDetails.list, nutrientID){
   
-  tempResult <- foodDetails.list$nutrients[foodDetails.list$nutrients$nutrient.id==nutrientID,]$amount
+  tempResult <- foodDetails.list$nutrients[foodDetails.list$nutrients$id==nutrientID,]$amount
   
   result <- ifelse(length(tempResult) == 0, 0, tempResult)
   
@@ -184,13 +239,17 @@ usda.searchByUPC <- function(upc, # note that more fields are available as per h
   
   upc <- as.character(upc)
   
-  temp.search <- usda.search(upc, # note that more fields are available as per https://fdc.nal.usda.gov/api-guide.html
+  temp.search <- usda.search.parsed(upc, # note that more fields are available as per https://fdc.nal.usda.gov/api-guide.html
                                     api_key,
                                     Branded = T, 
-                                    Foundation = T,
-                                    Survey = T)
+                                    Foundation = F,
+                                    Survey = F)
   
-  temp.fdcId <- temp.search$foods[[1]]$fdcId # always gets the first result
+  if(is.null(temp.search)){
+    return(NULL)
+  }
+  
+  temp.fdcId <- temp.search$fdcId[1] # always gets the first result
   
   
   results <- usda.details.parsed(temp.fdcId, api_key)

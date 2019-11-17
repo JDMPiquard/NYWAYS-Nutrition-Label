@@ -52,7 +52,7 @@ nyways.macros.calculate.basicScores <- function(
       proteinCalRatio >= 15, "Very High", ifelse(
         proteinCalRatio >= 10, "High", ifelse(
           proteinCalRatio >= 6, "Medium-High", ifelse(
-            proteinCalRatio >= 3, "Moderate", ifelse(
+            proteinCalRatio >= 3, "Medium-Low", ifelse(
               proteinCalRatio >= 1, "Low", "None"
             )
           ) 
@@ -109,6 +109,7 @@ capValue <- function(value, cap){
   return(ifelse(value > cap, cap, value))
 }
 
+# MODIFIED SCORING SYSTEM
 nutriscore.beta <- function(kcals,
                             sugar,
                             satFat,
@@ -132,6 +133,61 @@ nutriscore.beta <- function(kcals,
         )
       )
     )
+  n_fiber <- capValue(floor(fiber/0.9), 5)
+  n_protein <- capValue(floor(protein/1.6), 5)
+  
+  nutriscore_raw <-  n_kcals + n_sugar + n_satFat + n_sodium - n_fiber - n_protein - n_veggies
+  
+  nutriscore_rank <- ifelse(
+    nutriscore_raw <= -1, "+++", ifelse(
+      nutriscore_raw <= 5, "++", ifelse(
+        nutriscore_raw <= 10, "+", ifelse(
+          nutriscore_raw <= 18, "-","--"
+        )
+      )
+    )
+  )
+  
+  results.list <- list(
+    kcals = n_kcals,
+    kJ = kJ,
+    sugar = n_sugar,
+    satFat = n_satFat,
+    sodium = n_sodium,
+    fiber = n_fiber,
+    protein = n_protein,
+    nutriscore = nutriscore_raw,
+    nutriscoreRank = nutriscore_rank
+  )
+  
+  return(results.list)
+  
+}
+
+# ORIGINAL SCORING SYSTEM
+nutriscore.original <- function(kcals,
+                            sugar,
+                            satFat,
+                            sodium,
+                            pctVeggies,
+                            fiber,
+                            protein){
+  # the following numbers should each be per 100g of product
+  kJ <- kcals*1000*0.004184
+  
+  # now assign points as per nutriscore system
+  n_kcals = capValue(floor(kJ/335), 10)
+  n_sugar <- capValue(floor(sugar/4.5), 10)
+  n_satFat <- capValue(floor(satFat/1), 10)
+  n_sodium <- capValue(floor(sodium/90), 10)
+  
+  n_veggies <- ifelse(
+    pctVeggies > 0.8, 5, ifelse(
+      pctVeggies > 0.6, 2, ifelse(
+        pctVeggies > 0.4, 1, 0
+      )
+    )
+  )
   n_fiber <- capValue(floor(fiber/0.9), 5)
   n_protein <- capValue(floor(protein/1.6), 5)
   
@@ -211,7 +267,9 @@ nyways.macros.allScores <- function(
     carbs_100g = g_carbs,
     protein_100g = g_protein,
     sugar_100g = g_sugar,
-    fiber_100g = g_fiber
+    fiber_100g = g_fiber,
+    nutriScoreRaw = tempNutriscore$nutriscore,
+    proteinPer100kcal = tempScores$proteinRatio
   )
   
   return(results.df)
