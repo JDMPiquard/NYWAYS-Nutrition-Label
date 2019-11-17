@@ -17,6 +17,8 @@ function(input, output, session){
 
 	resultsTable.df <- reactiveVal("")
 
+	scannedUPC <- reactiveVal("")
+
 	observeEvent(
 		input$searchButton,
 		{
@@ -42,6 +44,47 @@ function(input, output, session){
 		)
 		}
 	})
+
+	observeEvent(
+		input$searchScanner,
+		{
+			insertUI(
+				"#scanBox", 
+				where = "beforeBegin", 
+				div(id='scanBox1'))
+			runjs('
+				Quagga.init({
+				    inputStream : {
+				      name : "Live",
+				      type : "LiveStream",
+				      target: document.querySelector("#scanBox1")
+				    },
+				    decoder : {
+				      readers : ["upc_reader", "upc_e_reader"]
+				    }
+				  }, function(err) {
+				      if (err) {
+				          console.log(err);
+				          return
+				      }
+				      console.log("Initialization finished. Ready to start");
+				      Quagga.start();
+				      Quagga.onDetected(function(data){Shiny.setInputValue("quaggaData", data.codeResult.code);})
+				  });')
+		}
+	)
+
+	observeEvent(
+		input$quaggaData,
+		{
+			scannedUPC(input$quaggaData)
+			output$verbatim <- renderText({ input$quaggaData })
+			removeUI("#scanBox1")
+			runjs("Quagga.stop()")
+		}
+	)
+
+	
 
 
 

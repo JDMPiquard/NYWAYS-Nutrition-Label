@@ -1,5 +1,5 @@
 # specifics to project
-secure/
+# secure/
 
 # relating to R
 *.Rhistory
