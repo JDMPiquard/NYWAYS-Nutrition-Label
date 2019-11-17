@@ -19,16 +19,24 @@ function(input, output, session){
 
 	scannedUPC <- reactiveVal("")
 
+	updateTable <- function(UPC){
+		temp.df <- app.giveScoresFromUPC(UPC)
+		if(resultsTable.df() != ""){
+			tempResult <- rbind(resultsTable.df(), temp.df)
+			resultsTable.df(tempResult)
+		}else{
+			resultsTable.df(temp.df)
+		}
+	}
+
+	checkUPC <- function(UPC){
+		return(ifelse(nchar(as.character(UPC))==12, T, F))
+	}
+
 	observeEvent(
 		input$searchButton,
 		{
-			temp.df <- app.giveScoresFromUPC(input$searchText)
-			if(resultsTable.df() != ""){
-				tempResult <- rbind(resultsTable.df(), temp.df)
-				resultsTable.df(tempResult)
-			}else{
-				resultsTable.df(temp.df)
-			}
+			updateTable(input$searchText)
 		}
 	)
 
@@ -81,6 +89,9 @@ function(input, output, session){
 			output$verbatim <- renderText({ input$quaggaData })
 			removeUI("#scanBox1")
 			runjs("Quagga.stop()")
+			if(checkUPC(input$quaggaData)){
+				updateTable(input$quaggaData)
+			}
 		}
 	)
 
