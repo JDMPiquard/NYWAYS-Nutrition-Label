@@ -1,0 +1,18 @@
+{
+  "keto": {
+    "proteinMin": 0.15,
+    "proteinMax": 0.2,
+    "fatMin": 0.75,
+    "fatMax": 0.8,
+    "carbsMin": 0.05,
+    "carbsMax": 0.1
+  },
+    "zone": {
+    "proteinMin": 0.275,
+    "proteinMax": 0.325,
+    "fatMin": 0.275,
+    "fatMax": 0.325,
+    "carbsMin": 0.375,
+    "carbsMax": 0.425
+    }
+}
