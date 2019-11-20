@@ -35,3 +35,5 @@ app.giveScoresFromUPC <- function(UPC){
   results.df <- app.calculate.allScores(details.df)
   return(results.df)
 }
+
+app.get
