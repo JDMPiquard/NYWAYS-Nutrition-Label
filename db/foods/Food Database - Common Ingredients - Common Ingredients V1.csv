@@ -1,0 +1,13 @@
+Name,NutriRating,Purpose,Subtype,Description
+SOY PROTEIN ISOLATE,0,Protein booster,,Protein source derived from soybeans through a refining process.
+COCOA POWDER,0,Flavouring,,
+ALKALIZED COCOA POWDER,1,Flavouring,,Alkalised version of cocoa powder (which is normally acidic)
+HIGH OLEIC SUNFLOWER OIL,0,Fat,,"High-oleic means it's 82% oleic acid (monounsaturated omega-9). Omega-9 fatty acids may
+increase HDL (“good”) cholesterol and decrease LDL (“bad”) cholesterol, thus help eliminate plaque buildup in the arteries, which causes heart attack and stroke."
+CANOLA OIL,0,Fat,,Note: Most canola is GMO (90% in the US)
+SOY LECITHIN,0,"Fat, emulsifier, antioxidant",,Fat derived from soy (thus Vegan)
+BIOTIN,0,Supplement,,"water-soluble B7-vitamin that helps your body convert food into energy. It is especially important during pregnancy and breastfeeding. In addition, biotin is important for the health of your hair, skin and nails."
+FOLIC ACID,0,Supplement,,"Folic acid is a stable, artificial form of vitamin B9. It’s not found naturally in food but often added to processed foods and used in multivitamin-mineral supplements. However, folic acid must be converted into active vitamin B9, known as 5-MTHF, before your body can use it."
+ERGOCALCIFEROL,0,Supplement,,"Also known as vitamin D2 and calciferol, is a type of vitamin D found in food and used as a dietary supplement."
+CHROMIUM CHLORIDE,0,Supplement,,"Provides Chromium. Chromium is a mineral that humans require in trace amounts, although its mechanisms of action in the body and the amounts needed for optimal health are not well defined. Chromium is known to enhance the action of insulin, a hormone critical to the metabolism and storage of carbohydrate, fat, and protein in the body."
+SOLUBLE CORN FIBER,0,Supplement,,Provides additional fiber

@@ -177,7 +177,7 @@ usda.details.parsed <- function(fdcId,
   
   results.list$nutrients = tempNutrients.df
   results.list$servingSize = servingSize
-  results.list$ingredients = trimws(unlist(strsplit(results.list$ingredients, ",")))
+  results.list$ingredients = trimws(unlist(strsplit(results.list$ingredients, "\\,|\\.|\\:")))
   
   return(results.list)
 }

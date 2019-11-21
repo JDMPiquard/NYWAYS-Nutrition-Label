@@ -116,7 +116,8 @@ nutriscore.beta <- function(kcals,
                             sodium,
                             pctVeggies,
                             fiber,
-                            protein){
+                            protein,
+                            liquidFood = FALSE){
   # the following numbers should each be per 100g of product
   kJ <- kcals*1000*0.004184
 
@@ -138,6 +139,11 @@ nutriscore.beta <- function(kcals,
   
   nutriscore_raw <-  n_kcals + n_sugar + n_satFat + n_sodium - n_fiber - n_protein - n_veggies
   
+  # BASIC ADAPTATION FOR LIQUIDS (given their content per serving, etc)
+  if(liquidFood){
+    nutriscore_raw <- nutriscore_raw + 10
+  }
+
   nutriscore_rank <- ifelse(
     nutriscore_raw <= -1, "+++", ifelse(
       nutriscore_raw <= 5, "++", ifelse(

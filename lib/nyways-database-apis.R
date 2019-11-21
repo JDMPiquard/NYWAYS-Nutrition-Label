@@ -122,6 +122,8 @@ nyways.api.getIngredients <- function(local=F){
     
     # combine a little more for ease of use
     foods.df <- pasteFoodData(foods.df, 'Description', 'Description', 'Code', deleteOriginals = F, sep = " - ")
+
+    foods.df$Name <- toupper(foods.df$Name)
     
   }
   
