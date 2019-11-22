@@ -61,7 +61,12 @@ dashboardPage(
 
     fluidRow(
       column(12,
-        h1("UPC Search")
+        uiOutput("ui_foodResults")
+      )
+    ),
+    fluidRow(
+      column(12,
+        h1("Comparison of Nutritional Analysis")
       )
     ),
     fluidRow(

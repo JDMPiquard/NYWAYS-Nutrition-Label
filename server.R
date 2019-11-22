@@ -9,18 +9,24 @@ require(googleVis)
 require(DT)
 require(shinyjs)
 source("lib/app-master-nyways-food-label.R")
+source("ui/ui_food.R")
 # source("ui/ui_form_sidebar.R")
 # source("ui/ui_main_body.R")
 
 
 function(input, output, session){
 
+	# define the reactive values
+	foodDetails.list <- reactiveVal("")
+
 	resultsTable.df <- reactiveVal("")
 
 	scannedUPC <- reactiveVal("")
 
-	updateTable <- function(UPC){
-		temp.df <- app.giveScoresFromUPC(UPC)
+	# MAIN [Non-Reactive] ####
+	# set up the main functions to update the data display and calculations
+	updateTable <- function(temp.df){
+
 		if(resultsTable.df() != ""){
 			tempResult <- rbind(resultsTable.df(), temp.df)
 			resultsTable.df(tempResult)
@@ -29,29 +35,50 @@ function(input, output, session){
 		}
 	}
 
+	renderNylabelUI <- function(){
+		temp.list <- foodDetails.list()
+		if(temp.list != ""){
+		  
+		  # 1 create the UI
+			output$ui_foodResults <- renderUI({
+			  ui.SingleResults(title = paste0(temp.list$brandOwner, ": ", temp.list$description))
+			})
+
+			# update the reactive components within it
+			output$ui_IngredientsTable <- DT::renderDataTable({
+				datatable(
+					temp.list$prettyIngredients,
+					options = list(pageLength = 10,
+						scrollX = TRUE), 
+					rownames=F, 
+					escape=F)
+				
+			}) 
+		}
+	}
+
+	updateAll <- function(UPC) {
+
+		tempDetails.list <- app.getFullDetailsFromUPC(UPC)
+		foodDetails.list(tempDetails.list)
+		
+		# render the ui
+		renderNylabelUI()
+		updateTable(tempDetails.list$allScores)
+
+	}
+
 	checkUPC <- function(UPC){
 		return(ifelse(nchar(as.character(UPC))==12, T, F))
 	}
 
+	# EVENT OBSERVERS ####
 	observeEvent(
 		input$searchButton,
 		{
-			updateTable(input$searchText)
+			updateAll(input$searchText)
 		}
 	)
-
-	output$UPCResult <- DT::renderDataTable({
-		if(resultsTable.df() != ""){
-			return(
-			datatable(
-				resultsTable.df(),
-				options = list(pageLength = 30,
-					scrollX = TRUE), 
-				rownames=T, 
-				escape=F)
-		)
-		}
-	})
 
 	observeEvent(
 		input$searchScanner,
@@ -90,13 +117,24 @@ function(input, output, session){
 			removeUI("#scanBox1")
 			runjs("Quagga.stop()")
 			if(checkUPC(input$quaggaData)){
-				updateTable(input$quaggaData)
+				updateAll(input$quaggaData)
 			}
 		}
 	)
 
-	
-
+	# UI UPDATES [Reactive] ####
+	output$UPCResult <- DT::renderDataTable({
+		if(resultsTable.df() != ""){
+			return(
+			datatable(
+				resultsTable.df(),
+				options = list(pageLength = 30,
+					scrollX = TRUE), 
+				rownames=T, 
+				escape=F)
+		)
+		}
+	})
 
 
 }

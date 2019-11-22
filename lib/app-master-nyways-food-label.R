@@ -93,5 +93,6 @@ app.getFullDetailsFromUPC <- function(UPC){
   results.df <- usda.searchByUPC(UPC, creds.usda)
   results.df$allScores <- app.calculate.allScores(results.df)
   results.df$parsedIngredients <- app.parse.ingredients(results.df)
+  results.df$prettyIngredients <- app.prettify.ingredients(results.df)
   return(results.df)
 }
